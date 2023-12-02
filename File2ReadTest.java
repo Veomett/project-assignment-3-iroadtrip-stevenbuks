@@ -16,11 +16,10 @@ class File2ReadTest
                 String[] nameLine = scan.nextLine().split("\t");
                 if (nameLine[4].equals("2020-12-31"))
                 {
-                    nameIDMap.put(nameLine[1].trim(), nameLine[2]);
+                    nameIDMap.put(nameLine[2].trim(), nameLine[1]);
                 }
             }
             System.out.println(nameIDMap);
-
         }
         catch (FileNotFoundException fe)
         {
