@@ -12,7 +12,7 @@ class Graph<T>
 
     Graph()
     {
-        CountryMap = new HashMap<String,  HashMap<String, Integer>>();
+        CountryMap = new HashMap<String, HashMap<String, Integer>>();
     }
     public void readStates_NamesFile()
     {
@@ -47,7 +47,6 @@ class Graph<T>
             while(scan.hasNextLine())
             {
                 String[] data;
-                List<String> valueList = new ArrayList<>();
                 String entry = scan.nextLine();
                 // System.out.println(entry);
                 String[] countryInfo = entry.split("=");
@@ -66,13 +65,22 @@ class Graph<T>
                     String CountryKey ="";
                     if (data.length == 1)
                     {
-                        for (int i = 0; i < data.length -2; i++)
+                        String[] line = data[0].split(" ");
+                        for (int i = 0; i < line.length -2; i++)
                         {
-                            CountryKey += data[i];
+                            CountryKey += line[i];
                             CountryKey+=" ";
                         }
-                        valueList.add(CountryKey);
-                        Countries.put(Name, valueList);
+                        if (!CountryMap.containsKey(Name))
+                        {
+                            HashMap<String, Integer> goal = new HashMap<>();
+                            goal.put(CountryKey, 0);
+                            CountryMap.put(Name, goal);
+                        }
+                        else
+                        {
+                           CountryMap.get(Name).put(CountryKey, 0);
+                        }
                     }
                     else if (data.length > 1)
                     {
@@ -86,13 +94,21 @@ class Graph<T>
                                 value += " ";
                             }
                             value = value.trim();
-                            valueList.add(value);
-                            Countries.put(Name, valueList);
+                            if(!CountryMap.containsKey(Name))
+                            {
+                                HashMap<String, Integer> goal = new HashMap<>();
+                                goal.put(value, 0);
+                                CountryMap.put(Name, goal);
+                            }
+                            else
+                            {
+                                CountryMap.get(Name).put(value, 0);
+                            }
                         }
                     }
                 }
             }
-            System.out.println(Countries);
+            System.out.println(CountryMap);
         }
         catch(FileNotFoundException fe)
         {
@@ -108,24 +124,49 @@ class Graph<T>
             while(scan.hasNextLine())
             {
                 String[] Line = scan.nextLine().split(",");
+                //get the ID of the origin country
                 String countID = Line[1];
-                String CountName = nameIDMap.get(countID);
-                List<String> countList = Countries.get(CountName);
-                for (int i = 0; i < countList.size(); i++)
+                //get the full name of the origin country
+                String CountName = nameIDMapReverse.get(countID);
+                //get the hashmap of the bordering countries
+                CountName = edgeCase(CountName);
+                HashMap<String, Integer> borderMap = CountryMap.get(CountName);
+                if (borderMap!= null)
                 {
-                    //get the ID from the Country name
-                    String countryID = nameIDMapReverse.get(countList.get(i));
+                    for (String borderNames : borderMap.keySet())
+                    {
+                        if (nameIDMapReverse.get(borderNames) != null)
+                        {
+                            String borderID = nameIDMapReverse.get(borderNames);
+                            if (borderID.equals(Line[3]))
+                            {
+
+                                Integer dist = Integer.getInteger(Line[4]);
+                                borderMap.put(borderNames,dist);
+                            }
+                        }
+                    }
                 }
             }
+            System.out.println(CountryMap);
         }
         catch (FileNotFoundException fe)
         {
             System.out.println(fe.getMessage());
         }
     }
-    void addEdge(String country1, String country2, int distance)
-    {}
-
+    String edgeCase(String CountryName)
+    {
+        if(CountryName.equals("United States of America"))
+        {
+            return "United States";
+        }
+        else if(CountryName.equals("add next edge case country"))
+        {
+            return "appropiate name";
+        }
+        return CountryName;
+    }
 }
 public class IRoadTrip {
 
@@ -149,8 +190,11 @@ public class IRoadTrip {
     public void acceptUserInput() {
         // Replace with your code
         System.out.println("IRoadTrip - skeleton");
+        Graph g = new Graph();
+        g.readBordersFile();
+        g.readStates_NamesFile();;
+        g.readCapDist();
     }
-
 
     public static void main(String[] args) {
         IRoadTrip a3 = new IRoadTrip(args);
@@ -159,4 +203,3 @@ public class IRoadTrip {
     }
 
 }
-

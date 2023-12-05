@@ -31,16 +31,21 @@ class File1ReadTest
                 }
                 else
                 {
+                    if (Name .equals("Papua New Guinea"))
+                    {
+                        System.out.println("Name");
+                    }
                     data = Info.split(";");
                     String CountryKey ="";
                     if (data.length == 1)
                     {
-                        for (int i = 0; i < data.length -2; i++)
+                        String[] line = data[0].split(" ");
+                        for (int i = 0; i < line.length -2; i++)
                         {
-                            CountryKey += data[i];
+                            CountryKey += line[i];
                             CountryKey+=" ";
                         }
-                        valueList.add(CountryKey);
+                        valueList.add(CountryKey.trim());
                         Countries.put(Name, valueList);
                     }
                     else if (data.length > 1)
