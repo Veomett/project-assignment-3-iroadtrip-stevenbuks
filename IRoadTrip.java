@@ -5,8 +5,8 @@ import java.util.*;
 
 class Graph<T>
 {
-    HashMap<String,String> nameIDMap;//<Unted States, USA>
-    HashMap<String, String> nameIDMapReverse;//<USA, United States>
+    HashMap<String,String> nameIDMap;
+    HashMap<String, String> nameIDMapReverse;
 
     //HashMap<String, List> Countries;
     //whenever adding something to map call edgeCase() on it
@@ -203,6 +203,14 @@ class Graph<T>
         {
             return "Congo, Republic of the";
         }
+        else if (CountryName.equals("UKG"))
+        {
+            return "UK";
+       }
+        else if (CountryName.equals("UK"))
+        {
+            return "United Kingdom";
+        }
         else if (CountryName.equals("Czech Republic"))
         {
             return "Czechia";
@@ -279,6 +287,10 @@ class Graph<T>
         {
             return "Zimbabwe";
         }
+        else if (CountryName.equals("Macedonia (Former Yugoslav Republic of)"))
+        {
+            return "North Macedonia";
+        }
         return CountryName;
     }
 }
@@ -299,7 +311,10 @@ public class IRoadTrip {
         // Replace with your code
         return null;
     }
-
+    String InputEdgeCase(String Country)
+    {
+        return "";
+    }
 
     public void acceptUserInput() {
         // Replace with your code
