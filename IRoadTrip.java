@@ -5,10 +5,12 @@ import java.util.*;
 
 class Graph<T>
 {
-    HashMap<String,String> nameIDMap;
-    HashMap<String, String> nameIDMapReverse;
-    HashMap<String, List> Countries;
-    HashMap<String, HashMap<String, Integer>> CountryMap;
+    HashMap<String,String> nameIDMap;//<Unted States, USA>
+    HashMap<String, String> nameIDMapReverse;//<USA, United States>
+
+    //HashMap<String, List> Countries;
+    //whenever adding something to map call edgeCase() on it
+    HashMap<String, HashMap<String, Integer>> CountryMap;//<United States, <Canada, 0>>
 
     Graph()
     {
@@ -27,8 +29,8 @@ class Graph<T>
                 String[] nameLine = scan.nextLine().split("\t");
                 if (nameLine[4].equals("2020-12-31"))
                 {
-                    nameIDMap.put(nameLine[2].trim(), nameLine[1]);
-                    nameIDMapReverse.put(nameLine[1].trim(), nameLine[2]);
+                    nameIDMap.put(edgeCase(nameLine[2].trim()), edgeCase(nameLine[1]));
+                    nameIDMapReverse.put(edgeCase(nameLine[1].trim()), edgeCase(nameLine[2]));
                 }
             }
             System.out.println(nameIDMap);
@@ -40,7 +42,7 @@ class Graph<T>
     }
     public void readBordersFile()
     {
-        Countries = new HashMap<>();
+        //Countries = new HashMap<>();
         try{
 
             Scanner scan = new Scanner(new File("borders.txt"));
@@ -57,7 +59,7 @@ class Graph<T>
                 Info = Info.trim();
                 if (Info == null)
                 {
-                    CountryMap.put(Name, new HashMap<>());
+                    CountryMap.put(edgeCase(Name), new HashMap<>());
                 }
                 else
                 {
@@ -74,12 +76,12 @@ class Graph<T>
                         if (!CountryMap.containsKey(Name))
                         {
                             HashMap<String, Integer> goal = new HashMap<>();
-                            goal.put(CountryKey, 0);
-                            CountryMap.put(Name, goal);
+                            goal.put(edgeCase(CountryKey), 0);
+                            CountryMap.put(edgeCase(Name), goal);
                         }
                         else
                         {
-                           CountryMap.get(Name).put(CountryKey, 0);
+                           CountryMap.get(edgeCase(Name)).put(edgeCase(CountryKey), 0);
                         }
                     }
                     else if (data.length > 1)
@@ -97,12 +99,12 @@ class Graph<T>
                             if(!CountryMap.containsKey(Name))
                             {
                                 HashMap<String, Integer> goal = new HashMap<>();
-                                goal.put(value, 0);
-                                CountryMap.put(Name, goal);
+                                goal.put(edgeCase(value), 0);
+                                CountryMap.put(edgeCase(Name), goal);
                             }
                             else
                             {
-                                CountryMap.get(Name).put(value, 0);
+                                CountryMap.get(edgeCase(Name)).put(edgeCase(value), 0);
                             }
                         }
                     }
@@ -127,25 +129,31 @@ class Graph<T>
                 //get the ID of the origin country
                 String countID = Line[1];
                 //get the full name of the origin country
-                if (nameIDMapReverse.get(countID) != null)
+                if (nameIDMapReverse.get(edgeCase(countID)) != null)
                 {
-                    String CountName = nameIDMapReverse.get(countID);
+                    String CountName = nameIDMapReverse.get(edgeCase(countID));
                     //get the hashmap of the bordering countries
+                    System.out.println(CountName);
                     CountName = edgeCase(CountName);
-                    HashMap<String, Integer> borderMap = CountryMap.get(CountName);
+                    HashMap<String, Integer> borderMap = CountryMap.get(edgeCase(CountName));
                     if (borderMap!= null)
                     {
+                        //<Strings origin, <String dest, Int distnace>
                         for (String borderNames : borderMap.keySet())
                         {
-                            borderNames = edgeCase(borderNames);
-                            if (nameIDMap.get(borderNames) != null)
+                            System.out.println(borderNames);
+                            if (nameIDMap.get(edgeCase(borderNames)) != null)
                             {
                                 String borderID = nameIDMap.get(edgeCase(borderNames));
+                                System.out.println(borderID);
                                 if (borderID.equals(Line[3]))
                                 {
+                                    System.out.println("here");
+                                    System.out.println(CountName);
                                     Integer dist = Integer.parseInt(Line[4]);
-                                    borderMap.put(borderNames,dist);
-                                    CountryMap.put(CountName, borderMap);
+                                    borderMap.put(edgeCase(borderNames),dist);
+                                    CountryMap.put(edgeCase(CountName), borderMap);
+                                    System.out.println(CountryMap.get(edgeCase(CountName)));
                                 }
                             }
                         }
@@ -161,25 +169,47 @@ class Graph<T>
     }
     String edgeCase(String CountryName)
     {
+        //only keep the ones that convert state_names to borders.txt
+        CountryName = CountryName.trim();
         if(CountryName.equals("United States of America"))
         {
             return "United States";
         }
-        else if(CountryName.equals("Burkina Faso(Upper Volta)"))
+        else if (CountryName.equals("Vietnam, Democratic Republic of"))
+        {
+            return "Vietnam";
+        }
+        else if (CountryName.equals("Burkina Faso (Upper Volta)"))
         {
             return "Burkina Faso";
         }
-        else if(CountryName.equals("Cambodia (Kampuchea"))
+        else if(CountryName.equals("Cambodia (Kampuchea)"))
         {
             return "Cambodia";
         }
-        else if (CountryName.equals("Congo, Democratic Republic of (Zaire"))
+        else if (CountryName.equals("Myanmar (Burma)"))
+        {
+            return "Burma";
+        }
+        else if (CountryName.equals("Congo, Democratic Republic of (Zaire)"))
+        {
+            return "Congo, Democratic Republic of the";
+        }
+        else if(CountryName.equals("Democratic Republic of the Congo"))
+        {
+            return "Congo, Democratic Republic of the";
+        }
+        else if (CountryName.equals("Republic of the Congo"))
         {
             return "Congo, Republic of the";
         }
         else if (CountryName.equals("Czech Republic"))
         {
             return "Czechia";
+        }
+        else if (CountryName.equals("The Gambia"))
+        {
+            return "Gambia, The";
         }
         else if (CountryName.equals("Gambia"))
         {
@@ -197,9 +227,17 @@ class Graph<T>
         {
             return "Italy";
         }
+        else if (CountryName.equals("North Korea"))
+        {
+            return "Korea, North";
+        }
         else if (CountryName.equals("Korea, People's Republic Of"))//ask about North and South Korea
         {
             return "Korea, North";
+        }
+        else if (CountryName.equals("South Korea"))
+        {
+            return "Korea, South";
         }
         else if (CountryName.equals("Korea, Republic of"))
         {
@@ -221,15 +259,19 @@ class Graph<T>
         {
             return "Tanzania";
         }
+        else if (CountryName.equals("Turkey"))
+        {
+            return "Turkey (Turkiye)";
+        }
         else if(CountryName.equals("Turkey (Ottoman Empire)"))
         {
-            return "Turkey";
+            return "Turkey (Turkiye)";
         }
         else if (CountryName.equals("Vietnam, Democratic Republic of"))
         {
             return "Vietnam";
         }
-        else if (CountryName.equals("Yemen (Arab Republic of Yemen"))
+        else if (CountryName.equals("Yemen (Arab Republic of Yemen)"))
         {
             return "Yemen";
         }
