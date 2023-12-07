@@ -1,34 +1,50 @@
+//Author: Steven Buks Class: CS245
+//this code generates a map of countires and creates a shortest route from one country to another by generating a route made of a list of countries
+//import statements
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
-public class IRoadTrip {
+//IRoadTrip is the main class where we make the route from one country to another
+//Graph is the subclass where our map is made by reading the three files (cap_dist.csv, borders.txt, state_name.tsv)
+public class IRoadTrip
+{
+    //here we instantiate a graph object so we can call its methods and variables outside the graph sub class
     Graph g = new Graph();
+    String borders;
+    String capDist;
+    String stateName;
     class Graph
     {
+        //this map converts from full name of country to its acronym
         HashMap<String,String> nameIDMap;
+        //this map converts from acronym to full name of country
         HashMap<String, String> nameIDMapReverse;
-
-        //HashMap<String, List> Countries;
-        //whenever adding something to map call edgeCase() on it
-        HashMap<String, HashMap<String, Integer>> CountryMap;//<United States, <Canada, 0>>
-
+        //This is the main map that stores countries and what countries they border as well as the distances between a country and all the countries that border it
+        HashMap<String, HashMap<String, Integer>> CountryMap;
         Graph()
         {
             CountryMap = new HashMap<String, HashMap<String, Integer>>();
         }
+        //this method reads "state_names.tsv"
         public void readStates_NamesFile()
         {
             try
             {
                 nameIDMap = new HashMap<>();
                 nameIDMapReverse = new HashMap<>();
+                //scanner is used to read file
                 Scanner scan = new Scanner(new File("state_name.tsv"));
+                //skips over first line
                 String line1 = scan.nextLine();
+                //loop while there are lines in the file
                 while(scan.hasNextLine())
                 {
+                    //split each lines based on tabs
                     String[] nameLine = scan.nextLine().split("\t");
+                    //if the country is up to date
                     if (nameLine[4].equals("2020-12-31"))
                     {
+                        //add the names and acronyms into the appropriate part of the Hashmap
                         nameIDMap.put(edgeCase(nameLine[2].trim()), edgeCase(nameLine[1]));
                         nameIDMapReverse.put(edgeCase(nameLine[1].trim()), edgeCase(nameLine[2]));
                     }
@@ -40,70 +56,89 @@ public class IRoadTrip {
                 System.out.println(fe.getMessage());
             }
         }
+        //reads borders.txt
         public void readBordersFile()
         {
             //Countries = new HashMap<>();
-            try{
-
+            try
+            {
+                //scanner used to read file
                 Scanner scan = new Scanner(new File("borders.txt"));
+               //while a line exists in the file
                 while(scan.hasNextLine())
                 {
                     String[] data;
+                    //gets current line
                     String entry = scan.nextLine();
-                    // System.out.println(entry);
+                    //split the line based on"="
                     String[] countryInfo = entry.split("=");
+                    //get the name of the origin country and trim it
                     String Name = countryInfo[0];
                     Name = Name.trim();
-                    // System.out.println(countryInfo);
+                    //info is everything after the equals sign
                     String Info = countryInfo[1];
                     Info = Info.trim();
+                    //if there is nothing after the equals sign then the country is an island so we add it to the countryMap with the value being an empty hashMap
                     if (Info == null)
                     {
                         CountryMap.put(edgeCase(Name), new HashMap<>());
                     }
                     else
                     {
+                        //otherwise we split on ;
                         data = Info.split(";");
                         String CountryKey ="";
+                        //if only one country borders the main one
                         if (data.length == 1)
                         {
+                            //split the string based on spaces
                             String[] line = data[0].split(" ");
+                            //iterate over the split strings until we ruch something that isn't a name of a country
                             for (int i = 0; i < line.length -2; i++)
                             {
                                 CountryKey += line[i];
                                 CountryKey+=" ";
-                            }
+                            }//if we didn't already add an entry for the main country name
                             if (!CountryMap.containsKey(Name))
                             {
+                                //add it to the main map hashMap and set the distance val to be MAX VALUE
                                 HashMap<String, Integer> goal = new HashMap<>();
                                 goal.put(edgeCase(CountryKey), Integer.MAX_VALUE);
                                 CountryMap.put(edgeCase(Name), goal);
                             }
                             else
                             {
+                                //else do .get.put() into the main map
+                                //set distance value to MAX VALUE
                                CountryMap.get(edgeCase(Name)).put(edgeCase(CountryKey), Integer.MAX_VALUE);
                             }
                         }
+                        //if there are more than one border country
                         else if (data.length > 1)
                         {
                             for (int i =0; i < data.length; i++)
                             {
+                                //split the string based on spaces
                                 String[] justCountry = data[i].trim().split(" ");
                                 String value = "";
+                                //iterate until we see a number
                                 for (int j = 0; j < justCountry.length -2; j++)
                                 {
                                     value += justCountry[j];
                                     value += " ";
                                 }
                                 value = value.trim();
+                                //if we didn't already add teh main country to map
                                 if(!CountryMap.containsKey(Name))
                                 {
+                                    //add it and make its value the MAX VALUE
                                     HashMap<String, Integer> goal = new HashMap<>();
                                     goal.put(edgeCase(value), Integer.MAX_VALUE);
                                     CountryMap.put(edgeCase(Name), goal);
                                 }
                                 else
                                 {
+                                    //else do .get.put() and make the distnace value Integer.MAX_VALUE
                                     CountryMap.get(edgeCase(Name)).put(edgeCase(value), Integer.MAX_VALUE);
                                 }
                             }
@@ -117,40 +152,47 @@ public class IRoadTrip {
                 System.out.println(fe.getMessage());
             }
         }
+        //reads capdist.csv
         public void readCapDist()
         {
             try
             {
+                //scanner used to read file
                 Scanner scan = new Scanner(new File("capdist.csv"));
+                //skip first line
                 String Line1 = scan.nextLine();
+                //while there is a line
                 while(scan.hasNextLine())
                 {
+                    //split string based on ,
                     String[] Line = scan.nextLine().split(",");
                     //get the ID of the origin country
                     String countID = Line[1];
-                    //get the full name of the origin country
+                    //get the full name of the origin country if it exists
                     if (nameIDMapReverse.get(edgeCase(countID)) != null)
                     {
                         String CountName = nameIDMapReverse.get(edgeCase(countID));
-                        //get the hashmap of the bordering countries
-                        System.out.println(CountName);
+                        //edgeCase() sets all country names to the borders.txt version of those names
                         CountName = edgeCase(CountName);
+                        //get the hashmap of the bordering countries
                         HashMap<String, Integer> borderMap = CountryMap.get(edgeCase(CountName));
+                        //if the country borders other countries
                         if (borderMap!= null)
                         {
-                            //<Strings origin, <String dest, Int distnace>
+                            //iterate over the HashMap and get the keys of the countries that are being bordered
                             for (String borderNames : borderMap.keySet())
                             {
-                                System.out.println(borderNames);
+                                //if the name has an associating acronym
                                 if (nameIDMap.get(edgeCase(borderNames)) != null)
                                 {
+                                    //get the acronym from the name
                                     String borderID = nameIDMap.get(edgeCase(borderNames));
-                                    System.out.println(borderID);
+                                    //if the obtained acronym equals the border acronym from the txt file
                                     if (borderID.equals(Line[3]))
                                     {
-                                        System.out.println("here");
-                                        System.out.println(CountName);
+                                        //we get the distance value from the file
                                         Integer dist = Integer.parseInt(Line[4]);
+                                        //we overwrite the main map to have the distance number
                                         borderMap.put(edgeCase(borderNames),dist);
                                         CountryMap.put(edgeCase(CountName), borderMap);
                                         System.out.println(CountryMap.get(edgeCase(CountName)));
@@ -167,6 +209,9 @@ public class IRoadTrip {
                 System.out.println(fe.getMessage());
             }
         }
+        //this method takes in a string and sees if it is an alias name
+        //if so it sets it to be the borders.txt version of that name
+        //otherwise it just returns the base string just trimmed
         String edgeCase(String CountryName)
         {
             //only keep the ones that convert state_names to borders.txt
@@ -295,6 +340,10 @@ public class IRoadTrip {
             {
                 return "Vietnam";
             }
+            else if (CountryName.equals("Great Britain"))
+            {
+                return "United Kingdom";
+            }
             else if (CountryName.equals("Yemen (Arab Republic of Yemen)"))
             {
                 return "Yemen";
@@ -325,11 +374,15 @@ public class IRoadTrip {
 
     public IRoadTrip (String [] args)
     {
+        //the constructor makes the graph object read the files
         g.readBordersFile();
         g.readStates_NamesFile();;
         g.readCapDist();
+        borders = args[0];
+        capDist = args[1];
+        stateName = args[2];
     }
-
+//getDistance returns the distnace between two adjacent countries
     public int getDistance (String country1, String country2) {
         HashMap<String, Integer> borderMap = new HashMap<>();
         try
@@ -341,11 +394,12 @@ public class IRoadTrip {
             return -1;
         }
     }
+    //this is the method where we make a path between two countries
     public List<String> findPath (String country1, String country2) {
         // Make new heap that contains a string that represents a path of countries where which the countries are separated by a "/"
         //e.g. path from US to Canada would be United States/Canada
         HashMap <String,Integer> heapMap = new HashMap<String, Integer>();
-        PriorityQueue<HashMap <String, Integer>>heap = new PriorityQueue();
+        PriorityQueue<HashMap <String, Integer>> heap = new PriorityQueue();
         heapMap.put(country1, 0);
         //add the input country and its distance ie 0 to heap
         heap.offer(heapMap);
@@ -398,47 +452,72 @@ public class IRoadTrip {
                    }
                }
            }
+           //this makes a list of strings to get the route
            List<String> PathToDest = new LinkedList<>();
+           //if the heap is empty them our path never leads to the destination
+            //i.e. our countries are on the other side of the world or one of them is an island
            if (DestHeap.isEmpty())
            {
                return PathToDest;
            }
            else
            {
+               //otherwise just get the highest priority item
+               //we don't need to check the other ones as they would all have a higher distance value
                HashMap<String, Integer> BestPathMap = DestHeap.poll();
+               //we get the key from the heap that we poll
                for (String PathKey: BestPathMap.keySet())
                {
+                   //we split the string based on "/" to get each individual country that makes up the route
                    String[] CountriesInPath = PathKey.split("/");
                    for (int i = 0; i < CountriesInPath.length; i++)
                    {
+                       //this adds each individual country from the path onto the list
                        PathToDest.add(CountriesInPath[i]);
                    }
+                   //returns list
                    return PathToDest;
                }
            }
         }
         return null;
     }
-    String InputEdgeCase(String Country)
+    //this accepts the user input and calls edge case
+    public void acceptUserInput()
     {
-        if(g.CountryMap.containsKey(Country))
-        {
-            return Country;
-        }
-        return "";
-    }
-
-    public void acceptUserInput(String Country1, String Country2) {
-        List<String> Pathway = new LinkedList<>();
+        //this receives the input for the input countires
+        System.out.println("Enter the name of the first country (type EXIT to quit):");
+        //we read the keyboard to get the input
+        Scanner scan = new Scanner(System.in);
+        String Country1 = scan.nextLine();
+        //gets the proper name for 1st country
         Country1 = g.edgeCase(Country1);
+        //if its not in the map then we assume invalid name
+        if (!g.CountryMap.containsKey(Country1))
+        {
+            System.out.println("Invalid country name. Please enter a valid country name.");
+        }
+        System.out.println("Enter the name of the first country (type EXIT to quit):");
+        String Country2 =  scan.nextLine();
+        //the same is for Country2
         Country2 = g.edgeCase(Country2);
+        if (!g.CountryMap.containsKey(Country2))
+        {
+            System.out.println("Invalid country name. Please enter a valid country name.");
+        }
+        //if we get EXIT in input we stop the program
+        if (Country2.equals("EXIT") || Country1.equals("EXIT"))
+        {
+            return;
+        }
+        List<String> Pathway = new LinkedList<>();
         Pathway = findPath(Country1, Country2);
         System.out.println(Pathway);
     }
 
     public static void main(String[] args) {
         IRoadTrip a3 = new IRoadTrip(args);
-        a3.acceptUserInput(args[0], args[1]);
+        a3.acceptUserInput();
 
     }
 
