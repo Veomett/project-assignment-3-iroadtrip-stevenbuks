@@ -195,7 +195,6 @@ public class IRoadTrip
                                         //we overwrite the main map to have the distance number
                                         borderMap.put(edgeCase(borderNames),dist);
                                         CountryMap.put(edgeCase(CountName), borderMap);
-                                        System.out.println(CountryMap.get(edgeCase(CountName)));
                                     }
                                 }
                             }
