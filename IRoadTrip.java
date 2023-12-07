@@ -1,9 +1,9 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.*;
-
-
-class Graph<T>
+public class IRoadTrip {
+    Graph g = new Graph();
+ private class Graph
 {
     HashMap<String,String> nameIDMap;
     HashMap<String, String> nameIDMapReverse;
@@ -76,12 +76,12 @@ class Graph<T>
                         if (!CountryMap.containsKey(Name))
                         {
                             HashMap<String, Integer> goal = new HashMap<>();
-                            goal.put(edgeCase(CountryKey), 0);
+                            goal.put(edgeCase(CountryKey), Integer.MAX_VALUE);
                             CountryMap.put(edgeCase(Name), goal);
                         }
                         else
                         {
-                           CountryMap.get(edgeCase(Name)).put(edgeCase(CountryKey), 0);
+                           CountryMap.get(edgeCase(Name)).put(edgeCase(CountryKey), Integer.MAX_VALUE);
                         }
                     }
                     else if (data.length > 1)
@@ -99,12 +99,12 @@ class Graph<T>
                             if(!CountryMap.containsKey(Name))
                             {
                                 HashMap<String, Integer> goal = new HashMap<>();
-                                goal.put(edgeCase(value), 0);
+                                goal.put(edgeCase(value), Integer.MAX_VALUE);
                                 CountryMap.put(edgeCase(Name), goal);
                             }
                             else
                             {
-                                CountryMap.get(edgeCase(Name)).put(edgeCase(value), 0);
+                                CountryMap.get(edgeCase(Name)).put(edgeCase(value), Integer.MAX_VALUE);
                             }
                         }
                     }
@@ -175,6 +175,14 @@ class Graph<T>
         {
             return "United States";
         }
+        else if (CountryName.equals("Morocco (Ceuta)"))
+        {
+            return "Morocco";
+        }
+        else if (CountryName.equals("Spain (Ceuta"))
+        {
+            return "Spain";
+        }
         else if (CountryName.equals("Vietnam, Democratic Republic of"))
         {
             return "Vietnam";
@@ -186,6 +194,10 @@ class Graph<T>
         else if(CountryName.equals("Cambodia (Kampuchea)"))
         {
             return "Cambodia";
+        }
+        else if (CountryName.equals("Cote D’Ivoire"))
+        {
+            return "Cote d'Ivoire";
         }
         else if (CountryName.equals("Myanmar (Burma)"))
         {
@@ -227,13 +239,17 @@ class Graph<T>
         {
             return "Germany";
         }
-        else if (CountryName.equals("Iran (Persia"))
+        else if (CountryName.equals("Iran (Persia)"))
         {
             return "Iran";
         }
         else if (CountryName.equals("Italy/Sardinia"))
         {
             return "Italy";
+        }
+        else if (CountryName.equals("Belarus (Byelorussia)"))
+        {
+            return "Belarus";
         }
         else if (CountryName.equals("North Korea"))
         {
@@ -291,28 +307,82 @@ class Graph<T>
         {
             return "North Macedonia";
         }
+        else if (CountryName.equals("Russia (Kaliningrad Oblast"))
+        {
+            return "Russia";
+        }
+        else if (CountryName.equals("Poland (Kaliningrad Oblast)"))
+        {
+            return "Poland";
+        }
+        else if (CountryName.equals("Lithuania (Kaliningrad Oblast)"))
+        {
+            return "Lithuania";
+        }
         return CountryName;
     }
 }
-public class IRoadTrip {
 
 
-    public IRoadTrip (String [] args) {
-        // Replace with your code
+    public IRoadTrip (String [] args)
+    {
+        g.readBordersFile();
+        g.readStates_NamesFile();;
+        g.readCapDist();
     }
 
     public int getDistance (String country1, String country2) {
-        // Replace with your code
-        return -1;
+        HashMap<String, Integer> borderMap = new HashMap<>();
+        try
+        {
+            return g.CountryMap.get(country1).get(country2);
+        }
+        catch (Exception e)
+        {
+            return -1;
+        }
+
+
+
     }
 
 
     public List<String> findPath (String country1, String country2) {
         // Replace with your code
+        HashMap <String,Integer> heapMap = new HashMap<>();
+        PriorityQueue<HashMap <String, Integer>>heap = new PriorityQueue();
+        for (String destination : g.CountryMap.keySet())
+        {
+            if (destination.equals(country1))
+            {
+                heapMap.put(country1, 0);
+            }
+            else
+            {
+                heapMap.put(destination, Integer.MAX_VALUE);
+            }
+        }
+        while (!heap.isEmpty())
+        {
+           HashMap<String, Integer> heapEntry =  heap.poll();
+           for (String origin : heapEntry.keySet())
+           {
+               for (String destination: g.CountryMap.get(origin).keySet())
+               {
+                   int distance = getDistance(origin, destination);
+                   heapMap.put(destination, distance);
+                   heap.offer(heapMap);
+               }
+           }
+        }
         return null;
     }
     String InputEdgeCase(String Country)
     {
+        if(g.CountryMap.containsKey(Country))
+        {
+            return Country;
+        }
         return "";
     }
 
@@ -323,10 +393,6 @@ public class IRoadTrip {
 
     public static void main(String[] args) {
         IRoadTrip a3 = new IRoadTrip(args);
-        Graph g = new Graph();
-        g.readBordersFile();
-        g.readStates_NamesFile();;
-        g.readCapDist();
         a3.acceptUserInput();
     }
 
