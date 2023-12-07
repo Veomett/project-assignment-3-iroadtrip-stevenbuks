@@ -26,14 +26,14 @@ public class IRoadTrip
             CountryMap = new HashMap<String, HashMap<String, Integer>>();
         }
         //this method reads "state_names.tsv"
-        public void readStates_NamesFile()
+        public void readStates_NamesFile(String fileName)
         {
             try
             {
                 nameIDMap = new HashMap<>();
                 nameIDMapReverse = new HashMap<>();
                 //scanner is used to read file
-                Scanner scan = new Scanner(new File("state_name.tsv"));
+                Scanner scan = new Scanner(new File(fileName));
                 //skips over first line
                 String line1 = scan.nextLine();
                 //loop while there are lines in the file
@@ -57,13 +57,13 @@ public class IRoadTrip
             }
         }
         //reads borders.txt
-        public void readBordersFile()
+        public void readBordersFile(String fileName)
         {
             //Countries = new HashMap<>();
             try
             {
                 //scanner used to read file
-                Scanner scan = new Scanner(new File("borders.txt"));
+                Scanner scan = new Scanner(new File(fileName));
                //while a line exists in the file
                 while(scan.hasNextLine())
                 {
@@ -153,12 +153,12 @@ public class IRoadTrip
             }
         }
         //reads capdist.csv
-        public void readCapDist()
+        public void readCapDist(String fileName)
         {
             try
             {
                 //scanner used to read file
-                Scanner scan = new Scanner(new File("capdist.csv"));
+                Scanner scan = new Scanner(new File(fileName));
                 //skip first line
                 String Line1 = scan.nextLine();
                 //while there is a line
@@ -375,15 +375,27 @@ public class IRoadTrip
     public IRoadTrip (String [] args)
     {
         //the constructor makes the graph object read the files
-        g.readBordersFile();
-        g.readStates_NamesFile();;
-        g.readCapDist();
-        borders = args[0];
-        capDist = args[1];
-        stateName = args[2];
+
+        try
+        {
+            //this reads in the command line arguments
+            borders = args[0];
+            capDist = args[1];
+            stateName = args[2];
+            //this passes in the files as arguments
+            g.readBordersFile(borders);
+            g.readStates_NamesFile(stateName);;
+            g.readCapDist(capDist);
+        }
+        catch (Exception e)
+        {
+            System.out.println(e.getMessage());
+        }
+
     }
 //getDistance returns the distnace between two adjacent countries
-    public int getDistance (String country1, String country2) {
+    public int getDistance (String country1, String country2)
+    {
         HashMap<String, Integer> borderMap = new HashMap<>();
         try
         {
@@ -395,7 +407,8 @@ public class IRoadTrip
         }
     }
     //this is the method where we make a path between two countries
-    public List<String> findPath (String country1, String country2) {
+    public List<String> findPath (String country1, String country2)
+    {
         // Make new heap that contains a string that represents a path of countries where which the countries are separated by a "/"
         //e.g. path from US to Canada would be United States/Canada
         HashMap <String,Integer> heapMap = new HashMap<String, Integer>();
@@ -514,11 +527,10 @@ public class IRoadTrip
         Pathway = findPath(Country1, Country2);
         System.out.println(Pathway);
     }
-
-    public static void main(String[] args) {
+    public static void main(String[] args)
+    {
         IRoadTrip a3 = new IRoadTrip(args);
         a3.acceptUserInput();
 
     }
-
 }
